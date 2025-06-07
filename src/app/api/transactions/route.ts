@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
         category,
       },
     });
+    console.log(newTx);
 
     return NextResponse.json(newTx, { status: 201 });
   } catch (error) {
