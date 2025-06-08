@@ -53,8 +53,8 @@ FinSight is built using modern full-stack tools like **Next.js**, **PostgreSQL**
 
 ## 🚀 Live Deployment
 
-- **Frontend (Vercel)**: [https://finsight.vercel.app](https://finsight.vercel.app)
-- **GitHub Repo**: [https://github.com/tejaspokale22/finsight](https://github.com/your-username/finsight)
+- **Frontend (Vercel)**: [https://fin-sight-vert.vercel.app](https://fin-sight-vert.vercel.app)
+- **GitHub Repo**: [https://github.com/tejaspokale22/finsight](https://github.com/tejaspokale22/finsight)
 
 ---
 
