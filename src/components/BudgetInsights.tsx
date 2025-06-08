@@ -63,6 +63,32 @@ export default function BudgetInsights() {
     error: null,
   });
 
+  const calculateComparison = useCallback((
+    budgets: Budget[],
+    transactions: Transaction[]
+  ): BudgetComparison[] => {
+    const currentMonthTransactions = transactions.filter((t) => {
+      const transactionDate = new Date(t.date);
+      return (
+        transactionDate.getMonth() + 1 === dateState.month &&
+        transactionDate.getFullYear() === dateState.year
+      );
+    });
+
+    return budgets.map((budget) => {
+      const actual = currentMonthTransactions
+        .filter((t) => t.category === budget.category)
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      return {
+        category: budget.category,
+        budget: budget.amount,
+        actual,
+        difference: budget.amount - actual,
+      };
+    });
+  }, [dateState.month, dateState.year]);
+
   const fetchData = useCallback(async () => {
     try {
       setChartData(prev => ({ ...prev, loading: true }));
@@ -99,32 +125,6 @@ export default function BudgetInsights() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const calculateComparison = useCallback((
-    budgets: Budget[],
-    transactions: Transaction[]
-  ): BudgetComparison[] => {
-    const currentMonthTransactions = transactions.filter((t) => {
-      const transactionDate = new Date(t.date);
-      return (
-        transactionDate.getMonth() + 1 === dateState.month &&
-        transactionDate.getFullYear() === dateState.year
-      );
-    });
-
-    return budgets.map((budget) => {
-      const actual = currentMonthTransactions
-        .filter((t) => t.category === budget.category)
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      return {
-        category: budget.category,
-        budget: budget.amount,
-        actual,
-        difference: budget.amount - actual,
-      };
-    });
-  }, [dateState.month, dateState.year]);
 
   const topSpendingCategory = useMemo(() => {
     if (chartData.data.length === 0) return null;
