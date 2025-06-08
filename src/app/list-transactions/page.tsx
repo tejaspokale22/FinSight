@@ -146,7 +146,7 @@ export default function ListTransactionsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <span className={transaction.amount >= 0 ? "text-green-600" : "text-red-600"}>
-                        ${Math.abs(transaction.amount).toFixed(2)}
+                      ₹ {Math.abs(transaction.amount).toFixed(2)}
                       </span>
                     </td>
                   </tr>

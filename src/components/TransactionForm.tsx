@@ -50,7 +50,7 @@ export default function TransactionForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Add New Transaction</h2>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Add a new transaction</h2>
       
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-900">Amount</Label>

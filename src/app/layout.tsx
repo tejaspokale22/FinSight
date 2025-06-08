@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-white poppins">
+      <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );

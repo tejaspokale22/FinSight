@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { PlusIcon, ListBulletIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { format } from "date-fns";
+import Spinner from "@/components/Spinner";
 
 type Transaction = {
   id: string;
@@ -60,19 +61,14 @@ export default function DashboardPage() {
       return acc;
     }, {} as Record<string, number>);
 
-    // Get all months from the first transaction to the current month
+    // Get all months of the current year
     const months: string[] = [];
-    if (transactions.length > 0) {
-      const firstDate = new Date(Math.min(...transactions.map(t => new Date(t.date).getTime())));
-      const lastDate = new Date();
-      
-      let currentDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
-      
-      while (currentDate <= lastDate) {
-        const monthKey = format(currentDate, "MMM yyyy");
-        months.push(monthKey);
-        currentDate.setMonth(currentDate.getMonth() + 1);
-      }
+    const currentYear = new Date().getFullYear();
+    
+    for (let month = 0; month < 12; month++) {
+      const date = new Date(currentYear, month, 1);
+      const monthKey = format(date, "MMM yyyy");
+      months.push(monthKey);
     }
 
     // Create data array with all months, using 0 for months with no transactions
@@ -114,7 +110,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <Spinner />
       </div>
     );
   }
@@ -166,7 +162,7 @@ export default function DashboardPage() {
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="text-lg font-medium text-gray-900">Total Monthly Expenses</h3>
             <p className="mt-2 text-3xl font-bold text-gray-900">
-              ₹{getTotalMonthlyExpense().toFixed(2)}
+              ₹ {getTotalMonthlyExpense().toFixed(2)}
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -217,7 +213,7 @@ export default function DashboardPage() {
           {/* Category Distribution Chart */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Category Distribution</h3>
-            <div className="h-[300px]">
+            <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -226,7 +222,7 @@ export default function DashboardPage() {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={150}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -278,7 +274,7 @@ export default function DashboardPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <span className={transaction.amount >= 0 ? "text-green-600" : "text-red-600"}>
-                        ₹{Math.abs(transaction.amount).toFixed(2)}
+                        ₹ {Math.abs(transaction.amount).toFixed(2)}
                       </span>
                     </td>
                   </tr>
