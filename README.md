@@ -1,4 +1,4 @@
-# 💰 FinSight – Personal Finance Tracker
+# FinSight – Personal Finance Tracker
 
 FinSight is a full-stack personal finance tracker that allows users to manage their daily expenses, set monthly budgets per category, and gain valuable insights from their spending behavior. It features a clean UI, charts, and real-time feedback based on budget utilization.
 
@@ -92,7 +92,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # Local Development
-DATABASE_URL="postgresql://postgres:admin@localhost:5432/finsight"
+DATABASE_URL="postgresql://<username>:<password>@<host>:<port>/<database_name>"
 
 # Production (Prisma Data Platform)
 # DATABASE_URL="your-prisma-hosted-postgres-url"
@@ -150,7 +150,20 @@ npx prisma migrate dev --name finsight-db
 
 ## 📊 Screenshots
 
-> Add screenshots of your application here to showcase the UI and features.
+![Dashboard Overview](screenshots/1.png)
+*Dashboard Overview - Main interface showing transaction list and summary*
+
+![Transaction Management](screenshots/2.png)
+*Transaction Management - Add and manage your expenses*
+
+![Budget Settings](screenshots/3.png)
+*Budget Settings - Configure monthly budgets per category*
+
+![Expense Analytics](screenshots/4.png)
+*Expense Analytics - Visualize your spending patterns*
+
+![Smart Insights](screenshots/5.png)
+*Smart Insights - Get valuable insights about your spending behavior*
 
 ---
 
