@@ -1,37 +1,166 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💰 FinSight – Personal Finance Tracker
 
-## Getting Started
+FinSight is a full-stack personal finance tracker that allows users to manage their daily expenses, set monthly budgets per category, and gain valuable insights from their spending behavior. It features a clean UI, charts, and real-time feedback based on budget utilization.
 
-First, run the development server:
+---
+
+## 📌 Project Overview
+
+FinSight is built using modern full-stack tools like **Next.js**, **PostgreSQL**, and **Prisma**, with optional support for **Redis caching**. The app allows users to:
+
+- Add, edit, and delete transactions
+- Set monthly budgets per category
+- Visualize spending and budget data via charts
+- Receive smart insights (like over-budget alerts)
+
+---
+
+## ✅ Features Implemented
+
+### 🎯 Stage 1 – Transaction Tracker
+- [x] Add, edit, delete transactions (amount, date, description, category)
+- [x] View all transactions
+- [x] Monthly expense bar chart
+- [x] Form validation using `react-hook-form`
+
+### 🎯 Stage 2 – Data Visualization
+- [x] Pie chart of category-wise expenses
+- [x] Monthly expense trends
+- [x] Chart tooltips and legends
+
+### 🎯 Stage 3 – Budgeting & Insights
+- [x] Set monthly budgets per category
+- [x] Budget vs actual comparison chart (Recharts)
+- [x] Smart insights:
+  - Over-budget alerts
+  - Top spending category
+  - Spending trends
+
+---
+
+## ⚙️ Tech Stack
+
+- **Frontend**: Next.js (App Router), Tailwind CSS, shadcn/ui
+- **Backend**: Prisma ORM, Next.js API routes
+- **Database**: 
+  - Local: PostgreSQL (Docker)
+  - Production: Prisma Data Platform (Hosted PostgreSQL)
+- **Charts**: Recharts
+- **Form Handling**: React Hook Form
+- **Optional**: Redis (via Upstash)
+
+---
+
+## 🚀 Live Deployment
+
+- **Frontend (Vercel)**: [https://finsight.vercel.app](https://finsight.vercel.app)
+- **GitHub Repo**: [https://github.com/tejaspokale22/finsight](https://github.com/your-username/finsight)
+
+---
+
+## 🛠️ Local Setup Instructions
+
+### 🔹 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/finsight.git
+cd finsight
+```
+
+### 🔹 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 🔹 3. Local Database Setup (Docker)
+
+```bash
+# Start PostgreSQL container
+docker run --name finsight-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=admin \
+  -e POSTGRES_DB=finsight \
+  -p 5432:5432 \
+  -v postgres_data:/var/lib/postgresql/data \
+  -d postgres
+```
+
+### 🔹 4. Environment Setup
+
+Create a `.env` file in the root directory:
+
+```env
+# Local Development
+DATABASE_URL="postgresql://postgres:admin@localhost:5432/finsight"
+
+# Production (Prisma Data Platform)
+# DATABASE_URL="your-prisma-hosted-postgres-url"
+```
+
+### 🔹 5. Prisma Setup
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Push schema to database
+npx prisma migrate dev --name finsight-db
+```
+
+### 🔹 6. Start Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit: [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🌐 Production Deployment
 
-## Learn More
+### 🔹 1. Prisma Data Platform Setup
 
-To learn more about Next.js, take a look at the following resources:
+1. Sign up for [Prisma Data Platform](https://cloud.prisma.io)
+2. Create a new project
+3. Choose PostgreSQL as your database
+4. Copy the connection URL provided by Prisma
+5. Add the connection URL to your production environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🔹 2. Vercel Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add the following environment variables in Vercel:
+   - `DATABASE_URL`: Your Prisma hosted PostgreSQL URL
+   - Any other required environment variables
 
-## Deploy on Vercel
+### 🔹 3. Database Migration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# Generate Prisma Client
+npx prisma generate
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# FinSight
+# Push schema to production database
+npx prisma migrate dev --name finsight-db
+```
+
+---
+
+## 📊 Screenshots
+
+> Add screenshots of your application here to showcase the UI and features.
+
+---
+
+## 🙌 License
+
+This project is open-source and free to use under the MIT License.
+
+---
+
+## ✨ Author
+
+* [Tejas Pokale](https://github.com/tejaspokale22)
+* [LinkedIn](https://www.linkedin.com/in/tejaspokale22)
