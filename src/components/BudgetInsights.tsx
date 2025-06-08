@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -14,77 +14,102 @@ import {
 import { format } from "date-fns";
 import Spinner from "@/components/Spinner";
 
-type Budget = {
+interface Budget {
   id: string;
   category: string;
   amount: number;
   month: number;
   year: number;
-};
+}
 
-type Transaction = {
+interface Transaction {
   id: string;
   amount: number;
   date: string;
   description: string;
   category: string;
-};
+}
 
-type BudgetComparison = {
+interface BudgetComparison {
   category: string;
   budget: number;
   actual: number;
   difference: number;
-};
+}
+
+interface ChartData {
+  data: BudgetComparison[];
+  loading: boolean;
+  error: string | null;
+}
 
 export default function BudgetInsights() {
-  const currentDate = new Date();
-  const [currentMonth] = useState(currentDate.getMonth() + 1); // 1-12
-  const [currentYear] = useState(currentDate.getFullYear());
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [comparison, setComparison] = useState<BudgetComparison[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use useEffect to ensure date is only calculated on the client side
+  const [dateState, setDateState] = useState({
+    month: 1,
+    year: new Date().getFullYear()
+  });
+
+  useEffect(() => {
+    const now = new Date();
+    setDateState({
+      month: now.getMonth() + 1,
+      year: now.getFullYear()
+    });
+  }, []);
+
+  const [chartData, setChartData] = useState<ChartData>({
+    data: [],
+    loading: true,
+    error: null,
+  });
+
+  const fetchData = useCallback(async () => {
+    try {
+      setChartData(prev => ({ ...prev, loading: true }));
+      
+      const [budgetsRes, transactionsRes] = await Promise.all([
+        fetch(`/api/budgets?month=${dateState.month}&year=${dateState.year}`),
+        fetch("/api/transactions")
+      ]);
+
+      if (!budgetsRes.ok || !transactionsRes.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const [budgetsData, transactionsData] = await Promise.all([
+        budgetsRes.json(),
+        transactionsRes.json()
+      ]);
+
+      const comparisonData = calculateComparison(budgetsData, transactionsData);
+      setChartData({
+        data: comparisonData,
+        loading: false,
+        error: null
+      });
+    } catch (err) {
+      setChartData({
+        data: [],
+        loading: false,
+        error: err instanceof Error ? err.message : "An error occurred"
+      });
+    }
+  }, [dateState.month, dateState.year]);
 
   useEffect(() => {
     fetchData();
-  }, [currentMonth, currentYear]);
+  }, [fetchData]);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      // Fetch budgets
-      const budgetsRes = await fetch(`/api/budgets?month=${currentMonth}&year=${currentYear}`);
-      if (!budgetsRes.ok) throw new Error("Failed to fetch budgets");
-      const budgetsData = await budgetsRes.json();
-      setBudgets(budgetsData);
-
-      // Fetch transactions
-      const transactionsRes = await fetch("/api/transactions");
-      if (!transactionsRes.ok) throw new Error("Failed to fetch transactions");
-      const transactionsData = await transactionsRes.json();
-      setTransactions(transactionsData);
-
-      // Calculate comparison
-      const comparisonData = calculateComparison(budgetsData, transactionsData);
-      setComparison(comparisonData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateComparison = (
+  const calculateComparison = useCallback((
     budgets: Budget[],
     transactions: Transaction[]
   ): BudgetComparison[] => {
     const currentMonthTransactions = transactions.filter((t) => {
       const transactionDate = new Date(t.date);
       return (
-        transactionDate.getMonth() + 1 === currentMonth &&
-        transactionDate.getFullYear() === currentYear
+        transactionDate.getMonth() + 1 === dateState.month &&
+        transactionDate.getFullYear() === dateState.year
       );
     });
 
@@ -100,20 +125,20 @@ export default function BudgetInsights() {
         difference: budget.amount - actual,
       };
     });
-  };
+  }, [dateState.month, dateState.year]);
 
-  const getTopSpendingCategory = () => {
-    if (comparison.length === 0) return null;
-    return comparison.reduce((max, curr) =>
+  const topSpendingCategory = useMemo(() => {
+    if (chartData.data.length === 0) return null;
+    return chartData.data.reduce((max, curr) =>
       curr.actual > max.actual ? curr : max
     );
-  };
+  }, [chartData.data]);
 
-  const getOverBudgetCategories = () => {
-    return comparison.filter((item) => item.difference < 0);
-  };
+  const overBudgetCategories = useMemo(() => {
+    return chartData.data.filter((item) => item.difference < 0);
+  }, [chartData.data]);
 
-  if (loading) {
+  if (chartData.loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Spinner />
@@ -121,10 +146,10 @@ export default function BudgetInsights() {
     );
   }
 
-  if (error) {
+  if (chartData.error) {
     return (
       <div className="text-red-500 text-center p-4">
-        <p className="text-lg font-medium">{error}</p>
+        <p className="text-lg font-medium">{chartData.error}</p>
         <button
           onClick={fetchData}
           className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
@@ -142,11 +167,22 @@ export default function BudgetInsights() {
         <h3 className="text-xl font-semibold mb-4">Budget vs Actual Spending</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparison}>
+            <BarChart data={chartData.data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" />
-              <YAxis />
-              <Tooltip />
+              <XAxis 
+                dataKey="category" 
+                tick={{ fontSize: 12 }}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis 
+                tickFormatter={(value) => `₹${value.toLocaleString()}`}
+              />
+              <Tooltip 
+                formatter={(value: number) => [`₹${value.toLocaleString()}`, '']}
+              />
               <Legend />
               <Bar dataKey="budget" name="Budget" fill="#8884d8" />
               <Bar dataKey="actual" name="Actual" fill="#82ca9d" />
@@ -160,13 +196,13 @@ export default function BudgetInsights() {
         {/* Top Spending Category */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h3 className="text-xl font-semibold mb-4">Top Spending Category</h3>
-          {getTopSpendingCategory() ? (
+          {topSpendingCategory ? (
             <div className="space-y-2">
               <p className="text-2xl font-bold text-gray-900">
-                {getTopSpendingCategory()?.category}
+                {topSpendingCategory.category}
               </p>
               <p className="text-gray-600">
-                ₹{getTopSpendingCategory()?.actual.toLocaleString()}
+                ₹{topSpendingCategory.actual.toLocaleString()}
               </p>
             </div>
           ) : (
@@ -177,9 +213,9 @@ export default function BudgetInsights() {
         {/* Over Budget Categories */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h3 className="text-xl font-semibold mb-4">Over Budget Categories</h3>
-          {getOverBudgetCategories().length > 0 ? (
+          {overBudgetCategories.length > 0 ? (
             <ul className="space-y-2">
-              {getOverBudgetCategories().map((category) => (
+              {overBudgetCategories.map((category) => (
                 <li
                   key={category.category}
                   className="flex justify-between items-center"

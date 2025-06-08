@@ -1,5 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Redis } from '@upstash/redis';
+
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
+
+const CACHE_TTL = 60 * 5; // 5 minutes in seconds
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +23,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Create cache key
+    const cacheKey = `budgets:${year}:${month}`;
+
+    // Try to get data from cache
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(cachedData);
+    }
+
+    // If not in cache, fetch from database
     const budgets = await prisma.budget.findMany({
       where: {
         month: parseInt(month),
@@ -23,6 +42,9 @@ export async function GET(request: NextRequest) {
         category: 'asc',
       },
     });
+
+    // Store in cache with TTL
+    await redis.set(cacheKey, budgets, { ex: CACHE_TTL });
 
     return NextResponse.json(budgets);
   } catch (error) {

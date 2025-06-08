@@ -1,4 +1,4 @@
-import BudgetForm from "@/components/BudgetForm";
+import BudgetForm from "@/components/BudgetForm"; 
 import BudgetInsights from "@/components/BudgetInsights";
 
 export default function BudgetPage() {
@@ -26,3 +26,4 @@ export default function BudgetPage() {
     </div>
   );
 } 
+
