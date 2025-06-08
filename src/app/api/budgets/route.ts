@@ -3,10 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { Redis } from '@upstash/redis';
 
 // Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+let redis: Redis;
+try {
+  redis = new Redis({
+    url: process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_URL || '',
+    token: process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN || '',
+  });
+} catch (error) {
+  console.error('Failed to initialize Redis client:', error);
+}
 
 const CACHE_TTL = 60 * 5; // 5 minutes in seconds
 
@@ -26,13 +31,20 @@ export async function GET(request: NextRequest) {
     // Create cache key
     const cacheKey = `budgets:${year}:${month}`;
 
-    // Try to get data from cache
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+    // Try to get data from cache if Redis is available
+    if (redis) {
+      try {
+        const cachedData = await redis.get(cacheKey);
+        if (cachedData) {
+          return NextResponse.json(cachedData);
+        }
+      } catch (redisError) {
+        console.error("Redis cache error:", redisError);
+        // Continue with database fetch if cache fails
+      }
     }
 
-    // If not in cache, fetch from database
+    // If not in cache or Redis fails, fetch from database
     const budgets = await prisma.budget.findMany({
       where: {
         month: parseInt(month),
@@ -43,14 +55,21 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Store in cache with TTL
-    await redis.set(cacheKey, budgets, { ex: CACHE_TTL });
+    // Store in cache if Redis is available
+    if (redis) {
+      try {
+        await redis.set(cacheKey, budgets, { ex: CACHE_TTL });
+      } catch (redisError) {
+        console.error("Redis cache set error:", redisError);
+        // Continue even if cache set fails
+      }
+    }
 
     return NextResponse.json(budgets);
   } catch (error) {
     console.error("Error fetching budgets:", error);
     return NextResponse.json(
-      { error: "Failed to fetch budgets" },
+      { error: "Failed to fetch budgets. Please try again later." },
       { status: 500 }
     );
   }

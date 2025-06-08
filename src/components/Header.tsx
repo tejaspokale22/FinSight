@@ -58,14 +58,8 @@ export default function Header() {
             <Link href="/dashboard" className="block px-3 py-2 text-base font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md">
               Dashboard
             </Link>
-            <Link href="/expenses" className="block px-3 py-2 text-base font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md">
-              Expenses
-            </Link>
             <Link href="/budget" className="block px-3 py-2 text-base font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md">
               Budget
-            </Link>
-            <Link href="/analytics" className="block px-3 py-2 text-base font-normal text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md">
-              Analytics
             </Link>
             <div className="mt-4 px-3">
               <Link

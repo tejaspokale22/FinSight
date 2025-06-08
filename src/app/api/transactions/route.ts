@@ -1,18 +1,12 @@
 import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server";
 import { TransactionCategory } from "@prisma/client";
-import { Redis } from '@upstash/redis';
-
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+import { redis, isRedisAvailable } from "@/lib/redis";
 
 const CACHE_TTL = 60 * 5; // 5 minutes in seconds
 
 // GET: All transactions
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
@@ -21,13 +15,20 @@ export async function GET(request: Request) {
     // Create cache key
     const cacheKey = `transactions:${year}:${month}`;
 
-    // Try to get data from cache
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+    // Try to get data from cache if Redis is available
+    if (isRedisAvailable() && redis) {
+      try {
+        const cachedData = await redis.get(cacheKey);
+        if (cachedData) {
+          return NextResponse.json(cachedData);
+        }
+      } catch (redisError) {
+        console.error("Redis cache error:", redisError);
+        // Continue with database fetch if cache fails
+      }
     }
 
-    // If not in cache, fetch from database
+    // If not in cache or Redis fails, fetch from database
     const transactions = await prisma.transaction.findMany({
       where: month && year ? {
         date: {
@@ -40,14 +41,21 @@ export async function GET(request: Request) {
       },
     });
 
-    // Store in cache with TTL
-    await redis.set(cacheKey, transactions, { ex: CACHE_TTL });
+    // Store in cache if Redis is available
+    if (isRedisAvailable() && redis) {
+      try {
+        await redis.set(cacheKey, transactions, { ex: CACHE_TTL });
+      } catch (redisError) {
+        console.error("Redis cache set error:", redisError);
+        // Continue even if cache set fails
+      }
+    }
 
     return NextResponse.json(transactions);
   } catch (error) {
     console.error('Error fetching transactions:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch transactions' },
+      { error: 'Failed to fetch transactions. Please try again later.' },
       { status: 500 }
     );
   }
