@@ -48,7 +48,7 @@ export default function DashboardPage() {
       }
       const data = await response.json();
       setTransactions(data);
-    } catch (err) {
+    } catch {
       setError("Failed to load dashboard data. Please try again later.");
     } finally {
       setLoading(false);

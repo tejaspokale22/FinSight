@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { format } from "date-fns";
 import Spinner from "@/components/Spinner";
 
 interface Budget {
@@ -95,7 +94,7 @@ export default function BudgetInsights() {
         error: err instanceof Error ? err.message : "An error occurred"
       });
     }
-  }, [dateState.month, dateState.year]);
+  }, [dateState.month, dateState.year, calculateComparison]);
 
   useEffect(() => {
     fetchData();

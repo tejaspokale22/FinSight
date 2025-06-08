@@ -30,7 +30,7 @@ export default function ListTransactionsPage() {
       }
       const data = await response.json();
       setTransactions(data);
-    } catch (err) {
+    } catch {
       setError("Failed to load transactions. Please try again later.");
     } finally {
       setLoading(false);

@@ -151,19 +151,14 @@ npx prisma migrate dev --name finsight-db
 ## 📊 Screenshots
 
 ![Dashboard Overview](screenshots/1.png)
-*Dashboard Overview - Main interface showing transaction list and summary*
 
 ![Transaction Management](screenshots/2.png)
-*Transaction Management - Add and manage your expenses*
 
 ![Budget Settings](screenshots/3.png)
-*Budget Settings - Configure monthly budgets per category*
 
 ![Expense Analytics](screenshots/4.png)
-*Expense Analytics - Visualize your spending patterns*
 
 ![Smart Insights](screenshots/5.png)
-*Smart Insights - Get valuable insights about your spending behavior*
 
 ---
 
