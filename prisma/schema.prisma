@@ -7,11 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionCategory {
+  FOOD
+  RENT
+  TRAVEL
+  OTHER
+}
+
 model Transaction {
-  id          String   @id @default(uuid())
+  id          String             @id @default(uuid())
   amount      Float
   date        DateTime
   description String
-  category    String?
-  createdAt   DateTime @default(now())
+  category    TransactionCategory @default(OTHER)
+  createdAt   DateTime           @default(now())
+}
+
+model Budget {
+  id        String             @id @default(uuid())
+  category  TransactionCategory
+  amount    Float
+  month     Int
+  year      Int
+  createdAt DateTime           @default(now())
 }

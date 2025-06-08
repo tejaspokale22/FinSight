@@ -7,25 +7,29 @@ import Link from "next/link";
 import { format } from "date-fns";
 import Spinner from "@/components/Spinner";
 
+enum TransactionCategory {
+  FOOD = "FOOD",
+  RENT = "RENT",
+  TRAVEL = "TRAVEL",
+  OTHER = "OTHER"
+}
+
 type Transaction = {
   id: string;
   amount: number;
   date: string;
   description: string;
-  category: string;
+  category: TransactionCategory;
 };
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
-const CATEGORIES = [
-  "Food",
-  "Rent",
-  "Transport",
-  "Entertainment",
-  "Shopping",
-  "Utilities",
-  "Other",
-];
+const CATEGORY_LABELS: Record<TransactionCategory, string> = {
+  [TransactionCategory.FOOD]: "Food",
+  [TransactionCategory.RENT]: "Rent",
+  [TransactionCategory.TRAVEL]: "Travel",
+  [TransactionCategory.OTHER]: "Other"
+};
 
 export default function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -80,16 +84,23 @@ export default function DashboardPage() {
 
   const getCategoryData = () => {
     const categoryExpenses = transactions.reduce((acc, transaction) => {
-      const category = transaction.category || "Other";
+      const category = transaction.category || TransactionCategory.OTHER;
       if (!acc[category]) {
         acc[category] = 0;
       }
       acc[category] += Math.abs(transaction.amount);
       return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<TransactionCategory, number>);
+
+    // Ensure all categories are represented, even if they have no transactions
+    Object.values(TransactionCategory).forEach(category => {
+      if (!categoryExpenses[category]) {
+        categoryExpenses[category] = 0;
+      }
+    });
 
     return Object.entries(categoryExpenses).map(([name, value]) => ({
-      name,
+      name: CATEGORY_LABELS[name as TransactionCategory],
       value,
     }));
   };
@@ -174,7 +185,7 @@ export default function DashboardPage() {
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="text-lg font-medium text-gray-900">Categories</h3>
             <p className="mt-2 text-3xl font-bold text-gray-900">
-              {new Set(transactions.map(t => t.category)).size}
+              {Object.keys(TransactionCategory).length}
             </p>
           </div>
         </div>
@@ -184,7 +195,7 @@ export default function DashboardPage() {
           {/* Monthly Expenses Chart */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Monthly Expenses</h3>
-            <div className="h-[300px]">
+            <div className="h-[300px] sm:h-[350px] md:h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={getMonthlyData()}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -213,7 +224,7 @@ export default function DashboardPage() {
           {/* Category Distribution Chart */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Category Distribution</h3>
-            <div className="h-[400px]">
+            <div className="h-[300px] sm:h-[350px] md:h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -222,7 +233,7 @@ export default function DashboardPage() {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={150}
+                    outerRadius="80%"
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -270,7 +281,7 @@ export default function DashboardPage() {
                       {transaction.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {transaction.category}
+                      {CATEGORY_LABELS[transaction.category]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <span className={transaction.amount >= 0 ? "text-green-600" : "text-red-600"}>

@@ -19,14 +19,8 @@ export default function Header() {
               <Link href="/dashboard" className="text-base font-normal text-gray-500 hover:text-gray-900 transition-colors duration-200">
                 Dashboard
               </Link>
-              <Link href="/expenses" className="text-base font-normal text-gray-500 hover:text-gray-900 transition-colors duration-200">
-                Expenses
-              </Link>
               <Link href="/budget" className="text-base font-normal text-gray-500 hover:text-gray-900 transition-colors duration-200">
                 Budget
-              </Link>
-              <Link href="/analytics" className="text-base font-normal text-gray-500 hover:text-gray-900 transition-colors duration-200">
-                Analytics
               </Link>
             </div>
           </div>

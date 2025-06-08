@@ -4,13 +4,28 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+enum TransactionCategory {
+  FOOD = "FOOD",
+  RENT = "RENT",
+  TRAVEL = "TRAVEL",
+  OTHER = "OTHER"
+}
 
 type FormData = {
   amount: number;
   date: string;
   description: string;
-  category: string;
+  category: TransactionCategory;
 };
 
 export default function TransactionForm() {
@@ -19,9 +34,11 @@ export default function TransactionForm() {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<FormData>();
 
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -41,8 +58,17 @@ export default function TransactionForm() {
       const result = await res.json();
       console.log("Added transaction:", result);
       reset();
+      toast({
+        title: "Success!",
+        description: "Transaction has been added successfully.",
+      });
     } catch (err) {
       console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Error!",
+        description: "Failed to add transaction. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -55,7 +81,7 @@ export default function TransactionForm() {
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-900">Amount</Label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">₹</span>
           <Input
             type="number"
             step="0.01"
@@ -96,12 +122,23 @@ export default function TransactionForm() {
 
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-900">Category</Label>
-        <Input
-          type="text"
-          className="w-full rounded-md border border-gray-300"
-          placeholder="e.g. Food, Rent, Transport"
-          {...register("category")}
-        />
+        <Select
+          onValueChange={(value) => setValue("category", value as TransactionCategory)}
+          {...register("category", { required: "Category is required" })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent className="z-50 bg-white">
+            <SelectItem value={TransactionCategory.FOOD}>Food</SelectItem>
+            <SelectItem value={TransactionCategory.RENT}>Rent</SelectItem>
+            <SelectItem value={TransactionCategory.TRAVEL}>Travel</SelectItem>
+            <SelectItem value={TransactionCategory.OTHER}>Other</SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.category && (
+          <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
+        )}
       </div>
 
       <Button 
